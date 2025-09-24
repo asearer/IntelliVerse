@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+.pytest_cache
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+
+# Virtual environments
+venv/
+.env/
+.env.*
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Pytest / Coverage
+htmlcov/
+.coverage
+.coverage.*
+.cache/
+.pytest_cache/
+
+# Logs
+*.log
+logs/
+*.out
+*.err
+
+# IDE / Editor settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter / IPython
+.ipynb_checkpoints/
+*.ipynb
+
+# OS generated
+.DS_Store
+Thumbs.db
+
+# Build / distribution
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+
+# Unity specific (XR module)
+*.meta
+*.unity
+*.prefab
+*.asset
+Library/
+Temp/
+Obj/
+Build/
+Builds/
