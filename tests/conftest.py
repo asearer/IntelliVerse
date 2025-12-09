@@ -7,7 +7,7 @@ xfail_tests = [
     "test_fl_server_receive_update",
     "test_shap_explain",                  # explainability
     "test_lime_explain",
-    "test_ai_prediction_output",
+    "test_lime_explain",
     "test_add_and_query_data",            # knowledge_graph
     "test_status_endpoint",               # api_gateway
     "test_event_publish_and_consume",     # event_bus

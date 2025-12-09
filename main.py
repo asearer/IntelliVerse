@@ -1,10 +1,10 @@
 """
-IntelliVerse Main Entrypoint
+IntelliVerse Main Entrypoint.
 
 Purpose:
-- Serves as a central orchestrator for all IntelliVerse modules
-- Demonstrates stub interactions between AI Core, Robotics, XR, Web3, Data Engine, and Security
-- Can be extended to full production workflows
+- Serves as a central orchestrator for all IntelliVerse modules.
+- Demonstrates stub interactions between AI Core, Robotics, XR, Web3, Data Engine, and Security.
+- Can be extended to full production workflows.
 
 Usage:
     python3 main.py
@@ -25,9 +25,13 @@ from data_engine.knowledge_graph.graph_builder import KnowledgeGraphStub
 from data_engine.analytics.anomaly_detection import DataAnomalyDetectionStub
 from security_monitoring.anomaly_detection import AnomalyDetectionStub
 
-def run_demo():
+def run_demo() -> None:
     """
-    Demonstrates an end-to-end flow between modules
+    Demonstrate an end-to-end flow between modules.
+
+    Initializes all system stubs and simulates a complete data flow cycle:
+    ingestion -> prediction -> explanation -> human input -> execution ->
+    learning -> analytics -> security -> logging.
     """
     print("=== IntelliVerse Demo Starting ===")
 

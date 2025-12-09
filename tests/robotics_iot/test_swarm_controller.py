@@ -8,4 +8,4 @@ def test_execute_command():
     robotics = RoboticsStub()
     command = {"move": "forward"}
     result = robotics.execute_command(command)
-    assert result is None  # Stub
+    assert result is True  # Stub returns True on success
