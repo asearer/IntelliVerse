@@ -1,42 +1,92 @@
 """
-Robotics IoT Swarm Controller Stub.
+Robotics IoT Swarm Controller.
 
-This module provides a stub implementation of the Robotics Swarm Controller,
-allowing for the simulation of robotic command execution including basic validation.
+This module provides a production implementation of the Robotics Swarm Controller,
+managing state and executing commands for a swarm of robots.
 """
 
-from typing import Any, Optional
+from typing import Any, Optional, Dict, List, TYPE_CHECKING
+from dataclasses import dataclass
+from utils.config import config
+from utils.logger import setup_logger
+
+logger = setup_logger(__name__)
+
+@dataclass
+class RobotState:
+    """State of a single robot."""
+    id: int
+    battery: float = 100.0
+    status: str = "IDLE"
+    position: List[float] = None
+
+    def __post_init__(self):
+        if self.position is None:
+            self.position = [0.0, 0.0, 0.0]
 
 class RoboticsStub:
     """
-    Stub for executing swarm commands.
+    Controller for the robotics swarm.
 
-    Serves as an interface to the physical robotics swarm, validating and logging
-    commands sent from the orchestration layer.
+    Manages a fleet of robots, tracking their state and dispatching commands.
     """
+
+    def __init__(self) -> None:
+        """
+        Initialize the Swarm Controller.
+        """
+        self.swarm_size = config.SWARM_SIZE
+        self.swarm: Dict[int, RobotState] = {
+            i: RobotState(id=i) for i in range(self.swarm_size)
+        }
+        logger.info(f"Robotics Swarm initialized with {self.swarm_size} units.")
 
     def execute_command(self, command: Any) -> Optional[bool]:
         """
-        Execute a simplified command on the robotic swarm.
+        Execute a command on the swarm.
 
         Args:
-            command: The command payload to execute. This stub expects a dictionary-like object
-                     or string that can be meaningfully interpreted, though currently it
-                     accepts Any for broad compatibility.
+            command: The command payload.
+                     Expected format: {"action": "move|scan", "target_id": int (optional params)}
 
         Returns:
-            Optional[bool]: True if the command was 'executed' successfully, 
-                            False if validation failed, None if no action was taken (e.g. empty command).
+            Optional[bool]: Success status.
         """
         if not command:
-            print("[Robotics] Received empty command. No action taken.")
+            logger.warning("Received empty command.")
             return None
         
         # Simple stub validation
         if isinstance(command, dict) and command.get("risk_score", 0) > 0.9:
-             print(f"[Robotics] Command rejected due to high risk: {command}")
+             logger.warning(f"Command rejected due to high risk: {command}")
              return False
 
-        print(f"[Robotics] Executing command: {command}")
-        # Simuluate successful execution
-        return True
+        action = command.get("action")
+        target_id = command.get("target_id")
+
+        if target_id is not None and target_id in self.swarm:
+            robot = self.swarm[target_id]
+            
+            if action == "move":
+                robot.battery -= 5.0
+                robot.status = "MOVING"
+                logger.info(f"Robot {target_id} moving. Battery: {robot.battery}%")
+            elif action == "scan":
+                robot.battery -= 2.0
+                robot.status = "SCANNING"
+                logger.info(f"Robot {target_id} scanning. Battery: {robot.battery}%")
+            else:
+                logger.info(f"Robot {target_id} executing generic action: {action}")
+                
+            if robot.battery <= 0:
+                logger.critical(f"Robot {target_id} battery depleted!")
+                robot.status = "OFFLINE"
+                return False
+                
+            return True
+        else:
+            # Broadcast command
+            logger.info(f"Broadcasting command to swarm: {action}")
+            for robot in self.swarm.values():
+                robot.battery -= 1.0
+            return True

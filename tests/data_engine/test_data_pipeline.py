@@ -1,15 +1,25 @@
 """
-Test suite for Data Engine Ingestion Pipeline stubs.
+Test suite for Data Engine Ingestion Pipeline.
 """
 
 import pytest
+import shutil
+import os
+# from data_engine.ingestion.pipeline import DataEngineStub
+# Wait, I must check the import path. The file is in 'data_engine'.
+
 from typing import Dict, List, Union
+# Correct import path based on file structure
 from data_engine.ingestion.pipeline import DataEngineStub
 
 def test_data_ingestion_output() -> None:
     """
     Ensure DataEngineStub.ingest_data returns a dictionary with correct structure and types.
     """
+    # Clean up any existing data to ensure clean state or just let it create
+    if os.path.exists("data_engine/data/sensors.csv"):
+        os.remove("data_engine/data/sensors.csv")
+        
     engine = DataEngineStub()
     data = engine.ingest_data()
 
@@ -25,5 +35,5 @@ def test_data_ingestion_output() -> None:
     assert isinstance(data["satellite_image"], str), "satellite_image should be a string"
 
     # Check Content Constraints
-    assert len(data["sensor_data"]) > 0, "sensor_data should not be empty"
+    assert len(data["sensor_data"]) == 4, "sensor_data should have 4 features"
     assert all(isinstance(x, float) for x in data["sensor_data"]), "sensor_data should contain floats"

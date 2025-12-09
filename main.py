@@ -10,6 +10,8 @@ Usage:
     python3 main.py
 """
 
+from utils.logger import setup_logger
+from utils.config import config
 from orchestration.api_gateway.main import app as api_app
 from ai_core.services.prediction_service import AICoreStub
 from ai_core.explainability.shap_analysis import ExplainabilityStub
@@ -25,6 +27,8 @@ from data_engine.knowledge_graph.graph_builder import KnowledgeGraphStub
 from data_engine.analytics.anomaly_detection import DataAnomalyDetectionStub
 from security_monitoring.anomaly_detection import AnomalyDetectionStub
 
+logger = setup_logger(__name__)
+
 def run_demo() -> None:
     """
     Demonstrate an end-to-end flow between modules.
@@ -33,57 +37,87 @@ def run_demo() -> None:
     ingestion -> prediction -> explanation -> human input -> execution ->
     learning -> analytics -> security -> logging.
     """
-    print("=== IntelliVerse Demo Starting ===")
+    logger.info(f"=== {config.APP_NAME} Demo Starting on {config.ENV} ===")
 
-    # Initialize modules
-    ai_core = AICoreStub()
-    shap_expl = ExplainabilityStub()
-    lime_expl = LIMEStub()
-    robotics = RoboticsStub()
-    xr = XRStub()
-    eeg = EEGStub()
-    web3 = Web3Stub()
-    data_engine = DataEngineStub()
-    fl_client = FLClientStub(client_id=1)
-    fl_server = FLServerStub()
-    kg = KnowledgeGraphStub()
-    analytics = DataAnomalyDetectionStub()
-    security = AnomalyDetectionStub()
+    try:
+        # Initialize modules
+        # 1. AI & Data
+        ai_core = AICoreStub()
+        data_engine = DataEngineStub()
+        
+        # 2. Advanced Analysis
+        shap_expl = ExplainabilityStub()
+        lime_expl = LIMEStub()
+        
+        # 3. Physical & XR
+        robotics = RoboticsStub()
+        xr = XRStub()
+        eeg = EEGStub()
+        
+        # 4. Distributed Systems
+        web3 = Web3Stub()
+        fl_client = FLClientStub(client_id=1)
+        fl_server = FLServerStub()
+        
+        # 5. Monitoring
+        kg = KnowledgeGraphStub()
+        analytics = DataAnomalyDetectionStub()
+        security = AnomalyDetectionStub()
 
-    # Simulate data ingestion
-    data = data_engine.ingest_data()
-    kg.add_data(data)
+        # --- FLOW EXECUTION ---
 
-    # AI Prediction
-    prediction = ai_core.predict(data)
-    shap_expl.explain(prediction)
-    lime_expl.explain(prediction)
+        # Simulate data ingestion
+        data = data_engine.ingest_data()
+        
+        # Extract features for prediction (assuming data contains raw + assets)
+        # In a real pipeline, we'd have a Transformer here.
+        # For this demo, we extract the numeric sensor data.
+        prediction_input = {"features": data.get("sensor_data", [])}
+        
+        kg.add_data(data)
 
-    # Human-in-the-loop input
-    gesture_feedback = xr.capture_gesture_input()
-    eeg_state = eeg.capture_cognitive_state()
+        # AI Prediction
+        prediction = ai_core.predict(prediction_input)
+        shap_expl.explain(prediction)
+        
+        # LIME might need raw data, passing prediction for stub compatibility
+        lime_expl.explain(prediction)
 
-    # Robotics execution
-    robotics.execute_command(prediction)
+        # Human-in-the-loop input
+        gesture_feedback = xr.capture_gesture_input()
+        eeg_state = eeg.capture_cognitive_state()
 
-    # Federated learning update
-    update = fl_client.local_train()
-    fl_server.receive_update(client_id=1, update=update)
+        # Robotics execution based on prediction and user input
+        # Logic: If risky, ask for confirmation (simulated here)
+        command = {
+            "action": "move" if prediction.get("predicted_label") == 0 else "scan", 
+            "target_id": 0,
+            "risk_score": prediction.get("risk_score")
+        }
+        
+        robotics.execute_command(command)
 
-    # Analytics
-    analytics.analyze(data)
+        # Federated learning update
+        update = fl_client.local_train()
+        fl_server.receive_update(client_id=1, update=update)
 
-    # Security monitoring
-    security.detect(prediction)
+        # Analytics
+        analytics.analyze(data)
 
-    # Blockchain logging
-    web3.log_to_blockchain({"prediction": prediction, "gesture": gesture_feedback})
+        # Security monitoring
+        security.detect(prediction)
 
-    print("=== IntelliVerse Demo Complete ===")
+        # Blockchain logging
+        web3.log_to_blockchain({"prediction": prediction, "gesture": gesture_feedback})
+
+        logger.info(f"=== {config.APP_NAME} Demo Complete ===")
+
+    except Exception as e:
+        logger.critical(f"Critical error during execution: {e}", exc_info=True)
+        raise
 
 if __name__ == "__main__":
-    # Optionally start API Gateway in background or separate terminal
+    # Optionally start API Gateway in background
     # api_app.run(port=5000)
-
-    # Run the demo orchestration
+    
     run_demo()
